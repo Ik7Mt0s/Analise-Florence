@@ -1,4 +1,8 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,6 +12,36 @@ import br.edu.icev.aed.forense.Alerta;
 import br.edu.icev.aed.forense.AnaliseForenseAvancada;
 
 public class SolucaoFlorence implements AnaliseForenseAvancada {
+
+    public List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
+        List<Alerta> alertas = new ArrayList<>();
+        try (BufferedReader br = Files.newBufferedReader(Path.of(caminhoArquivo))) {
+            String linha;
+            boolean primeira = true;
+            while ((linha = br.readLine()) != null) {
+                if (primeira) {
+                    if (linha.toLowerCase().contains("timestamp")) {
+                        primeira = false;
+                        continue;
+                    }
+                    primeira = false;
+                }
+                String[] cols = linha.split(",");
+                if (cols.length < 7) continue;
+
+                long timestamp = Long.parseLong(cols[0].trim());
+                String userId = cols[1].trim();
+                String sessionId = cols[2].trim();
+                String actionType = cols[3].trim();
+                String targetResource = cols[4].trim();
+                int severityLevel = Integer.parseInt(cols[5].trim());
+                long bytesTransferred = Long.parseLong(cols[6].trim());
+
+                alertas.add(new Alerta(timestamp, userId, sessionId, actionType, targetResource, severityLevel, bytesTransferred));
+            }
+        }
+        return alertas;
+    }
 
     @Override
     public Set<String> encontrarSessoesInvalidas(String arg0) throws IOException {
