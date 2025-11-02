@@ -2,7 +2,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,7 +18,7 @@ import br.edu.icev.aed.forense.AnaliseForenseAvancada;
 
 public class SolucaoFlorence implements AnaliseForenseAvancada {
 
-    public List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
+    private List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
         List<Alerta> alertas = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(Path.of(caminhoArquivo))) {
             String linha;
@@ -44,9 +49,72 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
 
     @Override
-    public Set<String> encontrarSessoesInvalidas(String arg0) throws IOException {
+    public Set<String> encontrarSessoesInvalidas(String caminho) throws IOException {
         /*Desafio 1: Encontrar Sessões Inválidas*/
-        throw new UnsupportedOperationException("Unimplemented method 'encontrarSessoesInvalidas'");
+        List<Alerta> alertas = lerArquivo(caminho);
+
+        Set<String> invalidas = new HashSet<>(1 << 16);
+        Map<String, Deque<String>> pilhasPorUsuario = new HashMap<>(1 << 16);
+        
+        boolean foraDeOrdem = false;
+
+        for (int i = 1; i < alertas.size(); i++){
+            if (alertas.get(i).getTimestamp() < alertas.get(i-1).getTimestamp()){
+                foraDeOrdem = true;
+                break;
+            }
+        }
+
+        if (foraDeOrdem){
+            alertas.sort(Comparator.comparingLong(Alerta::getTimestamp));
+        }
+
+        for (Alerta a: alertas){
+            String user = a.getUserId();
+            String session = a.getSessionId();
+            String action = a.getActionType();
+            
+            if (user == null || session == null || action == null) {
+                continue;
+            }
+
+            user = user.trim();
+            session = session.trim();
+            action = action.trim();
+
+            if (user.isEmpty() || session.isEmpty() || action.isEmpty()){
+                continue;
+            }
+
+            Deque<String> pilha = pilhasPorUsuario.get(user);
+            if (pilha == null) {
+                pilha = new ArrayDeque<>();
+                pilhasPorUsuario.put(user, pilha);
+            }
+            
+            if (action.equalsIgnoreCase("LOGIN")){
+                if (!pilha.isEmpty()){
+                    invalidas.add(session);
+                }
+                pilha.push(session);
+            }
+            else if (action.equalsIgnoreCase("LOGOUT")){
+                if (pilha.isEmpty()){
+                    invalidas.add(session);
+                }
+                else if (!pilha.peek().equals(session)) {
+                    invalidas.add(session);
+                }
+                else {
+                    pilha.pop();
+                }
+            }
+        }
+
+        for (Deque<String> pilha : pilhasPorUsuario.values()){
+            while (!pilha.isEmpty()) invalidas.add(pilha.pop());
+        }
+        return invalidas;
     }
 
     @Override
