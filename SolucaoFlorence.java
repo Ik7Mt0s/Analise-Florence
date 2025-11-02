@@ -19,7 +19,7 @@ import br.edu.icev.aed.forense.AnaliseForenseAvancada;
 
 public class SolucaoFlorence implements AnaliseForenseAvancada {
 
-    List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
+    private List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
         List<Alerta> alertas = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(Path.of(caminhoArquivo))) {
             String linha;
