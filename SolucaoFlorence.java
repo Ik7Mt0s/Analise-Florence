@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import br.edu.icev.aed.forense.AnaliseForenseAvancada;
 
 public class SolucaoFlorence implements AnaliseForenseAvancada {
 
-    private List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
+    List<Alerta> lerArquivo(String caminhoArquivo) throws IOException {
         List<Alerta> alertas = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(Path.of(caminhoArquivo))) {
             String linha;
@@ -167,11 +168,30 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
     
     @Override
-    public List<Alerta> priorizarAlertas(String arg0, int arg1) throws IOException {
+    public List<Alerta> priorizarAlertas(String caminho, int n) throws IOException {
         /*Desafio 3: Priorizar Alertas*/
-        throw new UnsupportedOperationException("Unimplemented method 'priorizarAlertas'");
+        if (n <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<Alerta> alertas = lerArquivo(caminho);
+
+        if (alertas.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Comparator<Alerta> comparador = Comparator.comparingInt(Alerta::getSeverityLevel).reversed().thenComparingLong(Alerta::getTimestamp).reversed().thenComparing(Alerta::getUserId, Comparator.nullsFirst(String::compareTo)).thenComparing(Alerta::getSessionId, Comparator.nullsFirst(String::compareTo));
+
+        alertas.sort(comparador);
+
+        List<Alerta> resultado = new ArrayList<>();
+
+        for (int i = 0; i < Math.min(n, alertas.size()); i++){
+            resultado.add(alertas.get(i));
+        }
+
+        return resultado;
     }
-    
+
     @Override
     public Map<Long, Long> encontrarPicosTransferencia(String arg0) throws IOException {
         /*Desafio 4: Encontrar Picos de Transferência*/
