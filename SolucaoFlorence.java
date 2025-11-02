@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,6 +55,19 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
 
         Set<String> invalidas = new HashSet<>(1 << 16);
         Map<String, Deque<String>> pilhasPorUsuario = new HashMap<>(1 << 16);
+        
+        boolean foraDeOrdem = false;
+
+        for (int i = 1; i < alertas.size(); i++){
+            if (alertas.get(i).getTimestamp() < alertas.get(i-1).getTimestamp()){
+                foraDeOrdem = true;
+                break;
+            }
+        }
+
+        if (foraDeOrdem){
+            alertas.sort(Comparator.comparingLong(Alerta::getTimestamp));
+        }
 
         for (Alerta a: alertas){
             String user = a.getUserId();
@@ -64,7 +78,7 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
                 continue;
             }
 
-            user = action.trim();
+            user = user.trim();
             session = session.trim();
             action = action.trim();
 
