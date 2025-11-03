@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
@@ -11,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import br.edu.icev.aed.forense.Alerta;
@@ -167,11 +170,43 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
     
     @Override
-    public List<Alerta> priorizarAlertas(String arg0, int arg1) throws IOException {
+    public List<Alerta> priorizarAlertas(String caminho, int n) throws IOException {
         /*Desafio 3: Priorizar Alertas*/
-        throw new UnsupportedOperationException("Unimplemented method 'priorizarAlertas'");
+        if (n <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<Alerta> alertas = lerArquivo(caminho);
+
+        if (alertas.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        Comparator<Alerta> comparador = Comparator.comparingInt(Alerta::getSeverityLevel).thenComparingLong(Alerta::getTimestamp).thenComparing(Alerta::getUserId, Comparator.nullsFirst(String::compareTo)).thenComparing(Alerta::getSessionId, Comparator.nullsFirst(String::compareTo));
+
+        Queue<Alerta> filaPrioridade = new PriorityQueue<>(n, comparador);
+
+        for (Alerta a: alertas){
+            if (filaPrioridade.size() < n) {
+                filaPrioridade.offer(a);
+            }
+            else{
+                if (comparador.compare(a, filaPrioridade.peek()) > 0) {
+                    filaPrioridade.poll();
+                    filaPrioridade.offer(a);
+                }
+            }
+        }
+
+        List<Alerta> resultado = new ArrayList<>(filaPrioridade);
+
+        Comparator<Alerta> outComparador = Comparator.comparingInt(Alerta::getSeverityLevel).reversed().thenComparingLong(Alerta::getTimestamp).reversed().thenComparing(Alerta::getUserId, Comparator.nullsFirst(String::compareTo)).thenComparing(Alerta::getSessionId, Comparator.nullsFirst(String::compareTo));
+
+        resultado.sort(outComparador);
+
+        return resultado;
     }
-    
+
     @Override
     public Map<Long, Long> encontrarPicosTransferencia(String arg0) throws IOException {
         /*Desafio 4: Encontrar Picos de Transferência*/
