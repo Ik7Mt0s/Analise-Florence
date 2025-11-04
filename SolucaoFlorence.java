@@ -172,36 +172,55 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     @Override
     public List<Alerta> priorizarAlertas(String caminho, int n) throws IOException {
         /*Desafio 3: Priorizar Alertas*/
+
+        //Casos inválidos: se n <= 0, não tem "top-N" pra retornar, retornando uma lista vazia
         if (n <= 0) {
             return Collections.emptyList();
         }
 
+        //Lê todo o arquivo e converte em List<Alerta>
         List<Alerta> alertas = lerArquivo(caminho);
 
+        //Arquivo sem dados: retorna lista vazia
         if (alertas.isEmpty()) {
             return Collections.emptyList();
         }
         
+        //COMPARATOR DO HEAP (PRIORIDADE ASC = "pior primeiro"):
+        //menor severity é pior
+        //em empate: timestamp menor (mais antigo) é pior
+        //depois: userId asc, sessionId asc (determinismo; nulls não quebram)
         Comparator<Alerta> comparador = Comparator.comparingInt(Alerta::getSeverityLevel).thenComparingLong(Alerta::getTimestamp).thenComparing(Alerta::getUserId, Comparator.nullsFirst(String::compareTo)).thenComparing(Alerta::getSessionId, Comparator.nullsFirst(String::compareTo));
 
+        //Fila de prioridade com capacidade inicial n e "pior primeiro" no topo
         Queue<Alerta> filaPrioridade = new PriorityQueue<>(n, comparador);
-
+        
+        //Varre todos os alertas e mantém só os N melhores no heap
         for (Alerta a: alertas){
             if (filaPrioridade.size() < n) {
+                //ainda não encheu: apenas adiciona
                 filaPrioridade.offer(a);
             }
             else{
+                // fila cheia: compara com o "pior" atual (peek)
+                // se 'a' for melhor que o pior da fila, troca
                 if (comparador.compare(a, filaPrioridade.peek()) > 0) {
-                    filaPrioridade.poll();
-                    filaPrioridade.offer(a);
+                    filaPrioridade.poll(); //remove o pior
+                    filaPrioridade.offer(a); //insere novo "melhor"
                 }
             }
         }
 
+        //Copia o top n da fila para uma lista
         List<Alerta> resultado = new ArrayList<>(filaPrioridade);
 
+        //COMPARATOR DE SAÍDA (EXIBIÇÃO): agora é prioridade DESC
+        //maior severity primeiro
+        //desempate: timestamp maior (mais recente) primeiro
+        //depois: userId asc e sessionId asc (ordem determinística)
         Comparator<Alerta> outComparador = Comparator.comparingInt(Alerta::getSeverityLevel).reversed().thenComparingLong(Alerta::getTimestamp).reversed().thenComparing(Alerta::getUserId, Comparator.nullsFirst(String::compareTo)).thenComparing(Alerta::getSessionId, Comparator.nullsFirst(String::compareTo));
 
+        //Ordena a lista final no sentido correto para retornar
         resultado.sort(outComparador);
 
         return resultado;
