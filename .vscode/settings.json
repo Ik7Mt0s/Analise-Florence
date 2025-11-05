@@ -1,6 +1,5 @@
 {
     "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\icaro\\OneDrive\\Documentos\\Faculdade\\2° Período\\Algorítmo e Estrutura de Dados I\\Trabalho P2\\trabalho_final_AED_2025.2\\analise-forense-aed.jar"
+        "lib/**/*.jar"
     ]
 }
