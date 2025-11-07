@@ -4,19 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import br.edu.icev.aed.forense.Alerta;
 import br.edu.icev.aed.forense.AnaliseForenseAvancada;
@@ -166,11 +154,50 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
 
     @Override
-    public List<String> reconstruirLinhaTempo(String arg0, String arg1) throws IOException {
+    public List<String> reconstruirLinhaTempo(String caminho, String sessionId) throws IOException {
         /*Desafio 2: Reconstruir Linha do Tempo*/
-        throw new UnsupportedOperationException("Unimplemented method 'reconstruirLinhaTempo'");
+        //Lê o arquivo CSV e transforma cada linha em um objeto "Alerta"
+        //O metodo já foi implementado antes
+        List<Alerta> alertas = lerArquivo(caminho);
+        //Flag usada para detectar se o arquivo está fora de ordem cronológica.
+        boolean foraDeOrdem = false;
+
+        //Faz uma varredura rápida para verificar se há algum timestamp fora de ordem.
+        //Se o timestamp atual for menor que o anterior, o log está "embaralhado".
+        for (int i = 1; i < alertas.size(); i++){
+            if (alertas.get(i).getTimestamp() < alertas.get(i-1).getTimestamp()){
+                foraDeOrdem = true;
+                break; //Basta detectar um caso fora de ordem para decidir ordenar.
+            }
+        }
+
+        //Se o arquivo estiver fora de ordem, ordena todos os eventos pelo timestamp.
+        //Isso garante que os eventos sejam processados na sequência temporal correta.
+        if (foraDeOrdem){
+            alertas.sort(Comparator.comparingLong(Alerta::getTimestamp));
+        }
+        //Cria uma fila que irá armazenar os actionTypes temporariamente de forma que a ordem cronológica seja mantida
+        Queue<String> fila = new LinkedList<>();
+        //Percorre todos os alertas do arquivo
+        for(Alerta i: alertas){
+            //Verifica se o alerta pertence ao sessionId
+            //Os alertas com o mesmo sessionId serão usados para reconstruir a linha do tempo
+            if(i.getSessionId().equals(sessionId)){
+                //Adiciona o actionType na fila
+                fila.add(i.getActionType());
+            }
+        }
+        //Retorna uma lista contendo todos os actionTypes da sessão, em ordem cronológica
+        //Converte a Fila em ArrayList para respeitar o tipo de retorno
+        List<String> resultado = new ArrayList<>();
+        //Enquanto a fila não estiver vazia, remove o primeiro elemento e adiciona à lista de resultado
+        while(!fila.isEmpty()){
+            resultado.add(fila.poll());
+        }
+        //Quando a Fila estiver vazia, retorna a lista resultado
+        return resultado;
     }
-    
+
     @Override
     public List<Alerta> priorizarAlertas(String caminho, int n) throws IOException {
         /*Desafio 3: Priorizar Alertas*/
