@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="04607ba2-5f6e-4eca-93ad-74499ae8e02e" name="Changes" comment="Organização de pastas" />
+    <list default="true" id="04607ba2-5f6e-4eca-93ad-74499ae8e02e" name="Changes" comment="Organização de pastas">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,6 +34,7 @@
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
@@ -56,6 +59,8 @@
       <updated>1762305078131</updated>
       <workItem from="1763576285995" duration="102000" />
       <workItem from="1763576450635" duration="2000" />
+      <workItem from="1763577946110" duration="21000" />
+      <workItem from="1763578043292" duration="35000" />
     </task>
     <servers />
   </component>
