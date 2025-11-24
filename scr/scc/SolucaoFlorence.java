@@ -278,46 +278,70 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     public Optional<List<String>> rastrearContaminacao(String caminho, String recursoInicial, String recursoAlvo) throws IOException {
         /*Desafio 5: Rastrear Contaminação*/
         
+        // Se qualquer parâmetro for nulo → não dá para rastrear nada.
         if (recursoInicial == null || recursoAlvo == null) {
             return Optional.empty();
         }
+
+        // Remove espaços e normaliza o texto.
         String inicio = recursoInicial.trim();
         String alvo = recursoAlvo.trim();
+
+        // Segurança extra: se ainda assim for nulo (não acontece na prática), retorna vazio.
         if (inicio == null || alvo == null) {
             return Optional.empty();
         }
 
+        // Caso trivial: o início é igual ao alvo → caminho de tamanho 1.
         if (inicio.equals(alvo)) {
             return Optional.of(java.util.Collections.singletonList(inicio));
         }
 
+        // Lê o CSV e produz uma lista de objetos Alerta
         List<Alerta> alertas = lerArquivo(caminho);
         if (alertas.isEmpty()){
             return Optional.empty();
         }
 
+        // Arquivo vazio → nenhum grafo possível
+        if (alertas.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Mapa: SESSION_ID -> lista de alertas dessa sessão
         Map<String, List<Alerta>> porSessao = new HashMap<>();
 
         for(Alerta a: alertas){
             String sessao = a.getSessionId();
             if (sessao == null){
+                // Evento sem SESSION_ID não entra na análise de contaminação
                 continue;
             }
-            porSessao.computeIfAbsent(alvo, k -> new ArrayList<>()).add(a);
+
+            // Cria a lista da sessão se não existir e adiciona o alerta nela
+            porSessao.computeIfAbsent(sessao, k -> new ArrayList<>()).add(a);
         }
 
+        // Adjacência: recurso_origem -> lista de recursos_destino
         Map<String, List<String>> adj = new HashMap<>();
 
+        // Para cada sessão, vamos construir transições entre recursos
         for (List<Alerta> eventos : porSessao.values()){
+
+            // Se tiver menos de 2 alertas, não há transição.
             if (eventos.size()<2) {                
                 continue;
             }
 
+            // Ordena eventos da sessão pela ordem do tempo (timestamp cres.)
             eventos.sort(Comparator.comparingLong(Alerta::getTimestamp));
 
             String anterior = null;
 
+            // Percorre os recursos da sessão
             for(Alerta a : eventos){
+
+                // Ignora recursos nulos ou vazios
                 String atual = a.getTargetResource();
                 if (atual == null) {
                     continue;
@@ -327,38 +351,47 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
                     continue;
                 }
 
+                // Se existe recurso anterior e mudou de recurso,
+                // cria um aresta no grafo: anterior -> atual
                 if (anterior != null && !anterior.equals(atual)) {
                     adj.computeIfAbsent(anterior, k -> new ArrayList<>()).add(atual);
                 }
 
+                // Atual vira o anterior para o próximo loop
                 anterior = atual;
             }
         }
 
+        // Se o grafo está vazio (nenhuma transição), não existe caminho
         if (adj.isEmpty()) {
             return Optional.empty();
         }
 
-        Deque<String> fila = new ArrayDeque<>();
-        Map<String, String> pai = new HashMap<>();
-        Set<String> visitado = new HashSet<>();
+
+        // ===== BFS =====
+        Deque<String> fila = new ArrayDeque<>(); // fila do BFS
+        Map<String, String> pai = new HashMap<>(); // para reconstruir caminho
+        Set<String> visitado = new HashSet<>(); // evita revisitar nós
         
         fila.add(inicio);
         visitado.add(inicio);
         pai.put(inicio, null);
 
         while (!fila.isEmpty()) {
-            String u = fila.poll();
+            String u = fila.poll(); // remove da fila
 
+            // Pega vizinhos (recursos acessados logo depois)
             List<String> vizinhos = adj.get(u);
             if (vizinhos == null) continue;
 
             for(String v: vizinhos){
+                // Se ainda não visitado, entra na BFS
                 if (!visitado.contains(v)) {
                     visitado.add(v);
                     pai.put(v, u);
                     fila.add(v);
 
+                    // Se achamos o alvo → encerramos a busca (early exit)
                     if (v.equals(alvo)) {
                         fila.clear();
                         break;
@@ -367,16 +400,21 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
             }
         }
 
+        // BFS terminou e o alvo não foi encontrado
         if (!pai.containsKey(alvo)) {
             return Optional.empty();
         }
 
+        // ===== Reconstrução do caminho =====
         List<String> caminhoList = new ArrayList<>();
+
+        // Volta dos pais até chegar no início
         for (String atual = alvo; atual != null; atual = pai.get(atual)) {
             caminhoList.add(atual);
         }
         Collections.reverse(caminhoList);
 
+        // O caminho foi reconstruído ao contrário -> inverte
         return Optional.of(caminhoList);
     }
     
