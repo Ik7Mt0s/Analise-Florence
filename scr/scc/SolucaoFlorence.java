@@ -275,9 +275,109 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
 
     @Override
-    public Optional<List<String>> rastrearContaminacao(String arg0, String arg1, String arg2) throws IOException {
+    public Optional<List<String>> rastrearContaminacao(String caminho, String recursoInicial, String recursoAlvo) throws IOException {
         /*Desafio 5: Rastrear Contaminação*/
-        throw new UnsupportedOperationException("Unimplemented method 'rastrearContaminacao'");
+        
+        if (recursoInicial == null || recursoAlvo == null) {
+            return Optional.empty();
+        }
+        String inicio = recursoInicial.trim();
+        String alvo = recursoAlvo.trim();
+        if (inicio == null || alvo == null) {
+            return Optional.empty();
+        }
+
+        if (inicio.equals(alvo)) {
+            return Optional.of(java.util.Collections.singletonList(inicio));
+        }
+
+        List<Alerta> alertas = lerArquivo(caminho);
+        if (alertas.isEmpty()){
+            return Optional.empty();
+        }
+
+        Map<String, List<Alerta>> porSessao = new HashMap<>();
+
+        for(Alerta a: alertas){
+            String sessao = a.getSessionId();
+            if (sessao == null){
+                continue;
+            }
+            porSessao.computeIfAbsent(alvo, k -> new ArrayList<>()).add(a);
+        }
+
+        Map<String, List<String>> adj = new HashMap<>();
+
+        for (List<Alerta> eventos : porSessao.values()){
+            if (eventos.size()<2) {                
+                continue;
+            }
+
+            eventos.sort(Comparator.comparingLong(Alerta::getTimestamp));
+
+            String anterior = null;
+
+            for(Alerta a : eventos){
+                String atual = a.getTargetResource();
+                if (atual == null) {
+                    continue;
+                }
+                atual = atual.trim();
+                if (atual.isEmpty()) {
+                    continue;
+                }
+
+                if (anterior != null && !anterior.equals(atual)) {
+                    adj.computeIfAbsent(anterior, k -> new ArrayList<>()).add(atual);
+                }
+
+                anterior = atual;
+            }
+        }
+
+        if (adj.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Deque<String> fila = new ArrayDeque<>();
+        Map<String, String> pai = new HashMap<>();
+        Set<String> visitado = new HashSet<>();
+        
+        fila.add(inicio);
+        visitado.add(inicio);
+        pai.put(inicio, null);
+
+        while (!fila.isEmpty()) {
+            String u = fila.poll();
+
+            List<String> vizinhos = adj.get(u);
+            if (vizinhos == null) continue;
+
+            for(String v: vizinhos){
+                if (!visitado.contains(v)) {
+                    visitado.add(v);
+                    pai.put(v, u);
+                    fila.add(v);
+
+                    if (v.equals(alvo)) {
+                        fila.clear();
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!pai.containsKey(alvo)) {
+            return Optional.empty();
+        }
+
+        List<String> caminhoList = new ArrayList<>();
+        for (String atual = alvo; atual != null; atual = pai.get(atual)) {
+            caminhoList.add(atual);
+        }
+        Collections.reverse(caminhoList);
+
+        return Optional.of(caminhoList);
     }
     
 }
