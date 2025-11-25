@@ -269,9 +269,47 @@ public class SolucaoFlorence implements AnaliseForenseAvancada {
     }
 
     @Override
-    public Map<Long, Long> encontrarPicosTransferencia(String arg0) throws IOException {
+    public Map<Long, Long> encontrarPicosTransferencia(String caminho) throws IOException {
         /*Desafio 4: Encontrar Picos de Transferência*/
-        throw new UnsupportedOperationException("Unimplemented method 'encontrarPicosTransferencia'");
+        //Lê o arquivo CSV e transforma cada linha em um objeto "Alerta"
+        List<Alerta> alertas = lerArquivo(caminho);
+        //Flag usada para detectar se o arquivo está fora de ordem cronológica.
+        boolean foraDeOrdem = false;
+        //Faz uma varredura rápida para verificar se há algum timestamp fora de ordem.
+        //Se o timestamp atual for menor que o anterior, o log está "embaralhado".
+        for (int i = 1; i < alertas.size(); i++){
+            if (alertas.get(i).getTimestamp() < alertas.get(i-1).getTimestamp()){
+                foraDeOrdem = true;
+                break; //Basta detectar um caso fora de ordem para decidir ordenar.
+            }
+        }
+        //Se o arquivo estiver fora de ordem, ordena todos os eventos pelo timestamp.
+        //Isso garante que os eventos sejam processados na sequência temporal correta.
+        if (foraDeOrdem){
+            alertas.sort(Comparator.comparingLong(Alerta::getTimestamp));
+        }
+        //Cria o mapa resultado
+        Map<Long, Long> resultado = new HashMap<>();
+        //Cria a pilha de Alerta para acessar os bytes e os timestamp
+        Deque<Alerta> pilha = new ArrayDeque<>();
+        //Loop do fim para o começo
+        for(int i = alertas.size() - 1; i >= 0; i--){
+            Alerta atual = alertas.get(i);
+            long byteatual = atual.getBytesTransferred();
+            long timeatual = atual.getTimestamp();
+            //Tira da pilha os candidatos que não servem(eventos com bytes menores ou igual)
+            while(!pilha.isEmpty() && pilha.peek().getBytesTransferred() <= byteatual){
+                pilha.poll();
+            }
+            //if para verificar se sobra alguém na fila, se sim, ele é o próximo pico
+            if(!pilha.isEmpty()){
+                long tsProximoMaior = pilha.peek().getTimestamp();
+                resultado.put(timeatual, tsProximoMaior);
+            }
+            //Empilha o evento atual
+            pilha.push(atual);
+        }
+        return resultado;
     }
 
     @Override
