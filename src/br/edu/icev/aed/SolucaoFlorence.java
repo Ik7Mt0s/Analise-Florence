@@ -1,4 +1,4 @@
-package scc;
+package br.edu.icev.aed;
 
 import java.io.BufferedReader;
 import java.io.IOException;
