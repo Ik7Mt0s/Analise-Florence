@@ -9,6 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
+<<<<<<< Updated upstream
     <list default="true" id="04607ba2-5f6e-4eca-93ad-74499ae8e02e" name="Changes" comment=".jar">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Analise-Florense1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Analise-Florense1.iml" afterDir="false" />
@@ -16,6 +17,9 @@
       <change beforePath="$PROJECT_DIR$/scr/scc/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/br/edu/icev/aed/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scr/scc/SolucaoFlorence.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/br/edu/icev/aed/SolucaoFlorence.java" afterDir="false" />
     </list>
+=======
+    <list default="true" id="04607ba2-5f6e-4eca-93ad-74499ae8e02e" name="Changes" comment="Organização de pastas" />
+>>>>>>> Stashed changes
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,15 +41,28 @@
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+<<<<<<< Updated upstream
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+=======
+>>>>>>> Stashed changes
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
+<<<<<<< Updated upstream
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Artifacts",
+=======
+    "last_opened_file_path": "C:/Users/icaro/OneDrive/Documentos/Faculdade/2° Período/Algorítmo e Estrutura de Dados I/Trabalho P2/Analise-Florence",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+>>>>>>> Stashed changes
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
     "to.speed.mode.migration.done": "true",
@@ -71,6 +88,7 @@
       <workItem from="1763576450635" duration="2000" />
       <workItem from="1763577946110" duration="21000" />
       <workItem from="1763578043292" duration="35000" />
+      <workItem from="1764026522424" duration="833000" />
     </task>
     <task id="LOCAL-00001" summary="Desafio 4 comentado">
       <option name="closed" value="true" />
